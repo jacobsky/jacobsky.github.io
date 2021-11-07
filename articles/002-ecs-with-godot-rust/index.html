@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>ECS with Godot. - jacobsky</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <meta name="description" content="My personal homepage."/>
+
+    <meta property="og:title" content="The Town&#x27;s Well -&nbsp;ECS with Godot." />
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https:&#x2F;&#x2F;jacobsky.github.io&#x2F;articles&#x2F;002-ecs-with-godot-rust&#x2F;"/>
+    <meta property="og:description" content="My personal homepage."/>
+    <link rel="preload" href="https://jacobsky.github.io/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://jacobsky.github.io/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://jacobsky.github.io/style.css?h=e41a1dfad61132bf9c9b951051fd04d0ef6427ab6b64efe0bbf1175cbc3f6f3e">
+    <link rel="stylesheet" href="https://jacobsky.github.io/color/blue.css?h=f853f6ceed13dac0a7adeff4a9fe12232bc8e46999eb38afded111c2aed2ebab">
+</head>
+    <body>
+        <div class="container center">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="https:&#x2F;&#x2F;jacobsky.github.io">
+    <div class="logo">
+        The Town&#x27;s Well
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/articles
+    
+">Articles</a>
+        </li>
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/ramblings
+    
+">Ramblings</a>
+        </li>
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/projects
+    
+">Projects</a>
+        </li></ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/articles
+    
+">Articles</a>
+        </li>
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/ramblings
+    
+">Ramblings</a>
+        </li>
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/projects
+    
+">Projects</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https:&#x2F;&#x2F;jacobsky.github.io&#x2F;articles&#x2F;002-ecs-with-godot-rust&#x2F;">ECS with Godot.</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2021.11.07
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    </div>
+
+        </header><h2 id="note-this-article-is-still-a-work-in-progress">Note: This article is still a work in progress.</h2>
+<p>If you've read the godot-rust book's <a href="https://godot-rust.github.io/book/gdnative-overview/architecture.html">Chapter on Game Architecture</a>, you may have some questions about how this could work with ECS.</p>
+<p>The basic answer is going to be based on option #3. But what does this look like?</p>
+<p>The answer can be found in the following repo: <a href="https://www.github.com/jacobsky/godot-specs-integration">godot-specs-integration</a>.</p>
+<p>There are a number of examples that you can view with information about how these integrations work, but in brief, the high level concept is that there are many ways to integrate an ECS with Godot is that you need the following:</p>
+<ul>
+<li>Node that accesses the control flow of the game and updates the game state</li>
+<li>A node that owns the ECS World(s)</li>
+</ul>
+<p>It is possible for both of these to be the same Node.</p>
+<p>The next godot-specific part is synchronizing the data between the ECS world and the godot-scene tree/library</p>
+<h2 id="1-synchronizing-via-godot-nodes">1. Synchronizing via Godot Nodes</h2>
+<p>TODO: Finish this</p>
+<h2 id="2-synchronizing-via-godot-io-layer-server-singletons">2. Synchronizing via Godot IO Layer (Server Singletons)</h2>
+<p>TODO: Finish this</p>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright">
+            <span>© 2021 <a href="https://github.com/ejmg/zerm">zerm</a> :: Powered by <a href="https://www.getzola.org/">Zola</a></span>
+            <span>:: Theme made by <a href="https://github.com/ejmg">ejmg</a></span>
+        </div>
+    <script type="text/javascript" src="https://jacobsky.github.io/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <title>How do design your ECS components. - jacobsky</title>
+    
+    
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <meta name="description" content="My personal homepage."/>
+
+    <meta property="og:title" content="The Town&#x27;s Well -&nbsp;How do design your ECS components." />
+    <meta property="og:type" content="website"/>
+    <meta property="og:url" content="https:&#x2F;&#x2F;jacobsky.github.io&#x2F;articles&#x2F;001-ecs-component-design&#x2F;"/>
+    <meta property="og:description" content="My personal homepage."/>
+    <link rel="preload" href="https://jacobsky.github.io/assets/fonts/FiraCode-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+    <link rel="preload" href="https://jacobsky.github.io/assets/fonts/FiraCode-Bold.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://jacobsky.github.io/style.css?h=e41a1dfad61132bf9c9b951051fd04d0ef6427ab6b64efe0bbf1175cbc3f6f3e">
+    <link rel="stylesheet" href="https://jacobsky.github.io/color/blue.css?h=f853f6ceed13dac0a7adeff4a9fe12232bc8e46999eb38afded111c2aed2ebab">
+</head>
+    <body>
+        <div class="container center">
+<header class="header">
+    <div class="header__inner">
+        <div class="header__logo">
+            <a href="https:&#x2F;&#x2F;jacobsky.github.io">
+    <div class="logo">
+        The Town&#x27;s Well
+    </div>
+</a>
+        </div>
+        <div class="menu-trigger">menu</div>
+    </div>
+    
+    <nav class="menu">
+        <ul class="menu__inner menu__inner--desktop">
+            
+            
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/articles
+    
+">Articles</a>
+        </li>
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/ramblings
+    
+">Ramblings</a>
+        </li>
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/projects
+    
+">Projects</a>
+        </li></ul>
+
+        <ul class="menu__inner menu__inner--mobile">
+            
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/articles
+    
+">Articles</a>
+        </li>
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/ramblings
+    
+">Ramblings</a>
+        </li>
+        <li>
+            <a href="
+    
+        https://jacobsky.github.io/projects
+    
+">Projects</a>
+        </li>
+        </ul>
+    </nav>
+
+    </header>
+<div class="content"><article class="post">
+        <header>
+            <h1 class="post-title">
+                <a href="https:&#x2F;&#x2F;jacobsky.github.io&#x2F;articles&#x2F;001-ecs-component-design&#x2F;">How do design your ECS components.</a>
+            </h1>
+            
+    <div class="post-meta">
+        <span class="post-date">2021.11.05
+                </span>
+
+        <span class="post-author"></span>
+
+        
+
+    
+    </div>
+
+        </header><p>Architecture is a constant thorn in my side as I continue to develop my game. While migrating to using <a href="https://github.com/amethyst/specs">SPECS</a> helped alleviate many issues and make my architecture more flexible and parallelilzable, the point that I struggled with the most was &quot;What constitutes a good component design?&quot;.</p>
+<p>As <a href="https://kyren.github.io/2018/09/14/rustconf-talk.html">kyren put so eloquently</a> &quot;ECS is SQL for games&quot; and I think this is a good place to start when considering how we should lay out our data. </p>
+<p>Note: This article is in reference to Rust and <a href="https://github.com/amethyst/specs">SPECS Parallel ECS</a></p>
+<p>If we think about an ECS <code>World</code> as a <code>database instance</code>, we can see the following:</p>
+<ul>
+<li><code>Entity</code> is a <code>PrimaryKey</code></li>
+<li><code>Component</code> are <code>Tables</code></li>
+<li><code>System</code> is both the App Logic and the Query logic that uses the Database. This often makes use of copious table joins to work with various data.</li>
+</ul>
+<h2 id="structuring-component-data">Structuring Component Data</h2>
+<p>In most Rust based ECS all of our components are stored as structs and it is possible to put any data that you want into it.</p>
+<p>For example, when working with rendering/spatial data we could write the <code>Transform3D</code> structs as either:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span style="color:#b48ead;">struct </span><span>Transform3D {
+</span><span>    </span><span style="color:#bf616a;">position</span><span>: (</span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>),
+</span><span>    </span><span style="color:#bf616a;">rotation</span><span>: (</span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>),
+</span><span>    </span><span style="color:#bf616a;">scale</span><span>: (</span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>),
+</span><span>}
+</span><span style="color:#65737e;">// Alternatively 
+</span><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span style="color:#b48ead;">struct </span><span>Transform3D {
+</span><span>    </span><span style="color:#bf616a;">position_x</span><span>: </span><span style="color:#b48ead;">f32
+</span><span>    position_y: </span><span style="color:#b48ead;">f32
+</span><span>    position_z: </span><span style="color:#b48ead;">f32
+</span><span>    </span><span style="color:#65737e;">//
+</span><span>    rotation_x: </span><span style="color:#b48ead;">f32
+</span><span>    rotation_y: </span><span style="color:#b48ead;">f32
+</span><span>    rotation_z: </span><span style="color:#b48ead;">f32
+</span><span>    </span><span style="color:#65737e;">//
+</span><span>    scale_x: </span><span style="color:#b48ead;">f32
+</span><span>    scale_y: </span><span style="color:#b48ead;">f32
+</span><span>    scale_z: </span><span style="color:#b48ead;">f32
+</span><span>}
+</span></code></pre>
+<p>Fundamentally, these are the same data, just layed out in slightly different ways. There may be <em>some</em> differences in the performance characteristics, but that requires profiling.</p>
+<p>From an architectural standpoint, this does mean that it is not possible to have an entity with a <code>Transform3D</code> that only represents position.</p>
+<p>If you want to make it so that the various portions are optional, you need to take one of two approaches.</p>
+<p>Making each part internally optional:</p>
+<pre data-lang="rs" style="background-color:#2b303b;color:#c0c5ce;" class="language-rs "><code class="language-rs" data-lang="rs"><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span style="color:#b48ead;">struct </span><span>Transform3D {
+</span><span>    </span><span style="color:#bf616a;">position</span><span>: Option&lt;(</span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>)&gt;,
+</span><span>    </span><span style="color:#bf616a;">rotation</span><span>: Option&lt;(</span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>)&gt;,
+</span><span>    </span><span style="color:#bf616a;">scale</span><span>: Option&lt;(</span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>, </span><span style="color:#b48ead;">f32</span><span>)&gt;,
+</span><span>}
+</span></code></pre>
+<p>Or representing them as separate components:</p>
+<pre data-lang="rs" style="background-color:#2b303b;color:#c0c5ce;" class="language-rs "><code class="language-rs" data-lang="rs"><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span style="color:#b48ead;">struct </span><span>Position3D {
+</span><span>    </span><span style="color:#bf616a;">x</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">y</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">z</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>}
+</span><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span style="color:#b48ead;">struct </span><span>Rotation3D {
+</span><span>    </span><span style="color:#bf616a;">x</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">y</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">z</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>}
+</span><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span style="color:#b48ead;">struct </span><span>Scale3D {
+</span><span>    </span><span style="color:#bf616a;">x</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">y</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>    </span><span style="color:#bf616a;">z</span><span>: </span><span style="color:#b48ead;">f32</span><span>,
+</span><span>}
+</span></code></pre>
+<p>Note: this is a trivial example that is intended to clearly demonstrate some different ways to organize the same data. You should evaluate each approach to ensure that it has the necessary performance characteristics for your game.</p>
+<p>A more complex example of something that you might need to work with in ECS is an inventory system.</p>
+<p>If items in your game are relatively simple and don't require complex data, you could probably make an inventory system work pretty easily with something like the following:</p>
+<pre data-lang="rs" style="background-color:#2b303b;color:#c0c5ce;" class="language-rs "><code class="language-rs" data-lang="rs"><span style="color:#b48ead;">enum </span><span>ItemKind {
+</span><span>    A, B, C, D
+</span><span>}
+</span><span>
+</span><span style="color:#b48ead;">struct </span><span>InventoryItem {
+</span><span>    </span><span style="color:#bf616a;">kind</span><span>: ItemKind,
+</span><span>    </span><span style="color:#bf616a;">quantity</span><span>: </span><span style="color:#b48ead;">i32
+</span><span>}
+</span><span>
+</span><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span style="color:#b48ead;">struct </span><span>Inventory {
+</span><span>    </span><span style="color:#bf616a;">items</span><span>: Vec&lt;InventoryItem&gt;
+</span><span>}
+</span></code></pre>
+<p>There are some additional changes that you could also make to allow for more configurable kinds of items, but the assumption in the above code is that Inventory Items are not entities and cannot exist in the world.</p>
+<p>What if we want to allow items to also be entities. This may be useful for games with a much higher degree of simulation, e.g. Clockwork games like Hitman where items can also exist in the world and may have many types of possible interactions.</p>
+<p>Another advantage is that rather than always duplicating the item information, it would be possible to organize the items as references to other items.</p>
+<p>One way to handle this would be to change the inventory from <code>InventoryItem</code> to <code>Entity</code> like:</p>
+<pre data-lang="rs" style="background-color:#2b303b;color:#c0c5ce;" class="language-rs "><code class="language-rs" data-lang="rs"><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span style="color:#b48ead;">struct </span><span>Inventory {
+</span><span>    </span><span style="color:#bf616a;">items</span><span>: Vec&lt;Entity&gt;
+</span><span>}
+</span></code></pre>
+<p>Then we can define any data on our item entity that we want. We can also create separate components to indicate stackability, add description information, etc.</p>
+<p>But there's a problem with this solution. In case you didn't catch it, this allows for any <code>Inventory</code> to store any <code>Entity</code> and it is possible for the same <code>Entity</code> to be stored in two separate <code>Inventory</code>s. One option is to manually check every inventory to ensure that an Entity isn't stored else-where (this is a bad idea as it is super performance intensive).</p>
+<p>As this highlights a common issue with ECS, I'm going to spoil it for you a bit. This is the &quot;relational&quot; part of relational database.</p>
+<h2 id="component-relationships">Component Relationships</h2>
+<p>Something that we can use as a bit of a guide when considering this is <a href="https://en.wikipedia.org/wiki/Database_normalization">Database Normalization</a>, in particular, Third Normal Form which creates the following constraints with regard to table design.</p>
+<table><thead><tr><th>Constraint</th><th>ECS Equivalent</th></tr></thead><tbody>
+<tr><td>Primary key</td><td>Entity</td></tr>
+<tr><td>Atomic columns where cells cannot have tables as values</td><td>Components cannot have properties that are also Components</td></tr>
+<tr><td>Every non-primary-key attribute is fully functionally dependent on the primary key</td><td>No struct should be dependent upon more than the Entity itself</td></tr>
+<tr><td>No non-primary-key attribute is transitively dependent on the primary key</td><td>Don't make tables that both depend on another Entity and contain duplicate data from the entity</td></tr>
+</tbody></table>
+<p>Now this is a rough guide on the translation between the two. In 99% of cases, common sense will keep your data conforming with 3NF as structuring your data often wouldn't make any sense otherwise.</p>
+<p>The next step is to determine the actual relationships that we need to create.</p>
+<p>Considering the inventory example:</p>
+<p>An inventory can have 0 or more entities, but an entity can only belong to a single entity. As such we can identify that this is a one to many relationship. While the previous option <em>technically</em> models this. It is more convenient to model it in reverse.</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#65737e;">/// This component will add any entity. It is the system&#39;s responsibility for ensuring that the 
+</span><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span style="color:#b48ead;">struct </span><span>StoredInContainer {
+</span><span>    </span><span style="color:#bf616a;">stored_in</span><span>: Entity
+</span><span>}
+</span><span>
+</span><span style="color:#65737e;">// This is any entity that can act as a container. NullStorage allows us to effectively create a `Table` with only a single column.
+</span><span>#[</span><span style="color:#bf616a;">derive</span><span>(Component)]
+</span><span>#[</span><span style="color:#bf616a;">storage</span><span>(NullStorage)]
+</span><span style="color:#b48ead;">struct </span><span>InventoryContainer;
+</span></code></pre>
+<p>Using specs we can create the relationship between two entities in the following code:</p>
+<pre data-lang="rust" style="background-color:#2b303b;color:#c0c5ce;" class="language-rust "><code class="language-rust" data-lang="rust"><span style="color:#b48ead;">let</span><span> world = World::new();
+</span><span style="color:#b48ead;">let</span><span> inventory = world.</span><span style="color:#96b5b4;">create_entity</span><span>()
+</span><span>    </span><span style="color:#65737e;">// Add other data of interest
+</span><span>    .</span><span style="color:#96b5b4;">with</span><span>(InventoryContainer{})
+</span><span>    .</span><span style="color:#96b5b4;">build</span><span>();
+</span><span style="color:#b48ead;">let</span><span> item = world.</span><span style="color:#96b5b4;">create_entity</span><span>()
+</span><span>    </span><span style="color:#65737e;">// Add other data of interest
+</span><span>    .</span><span style="color:#96b5b4;">with</span><span>(Storage)
+</span><span>    .</span><span style="color:#96b5b4;">with</span><span>(StoredInContainer { stored_in: inventory })
+</span><span>    .</span><span style="color:#96b5b4;">build</span><span>();
+</span></code></pre>
+<p>One point that may confuse some newer developers is how you can figure out which entity owns a given item.</p>
+<p>The general answer is that you would do a join across the <code>Entity</code> table checking whether the <code>StoredInContainer</code> entity refers to the entity in question. There may be some additional optimizations that you can look into, but as most Iventory look up would happen relatively infrequently.</p>
+<p>In specs this looks like:</p>
+<pre data-lang="rs" style="background-color:#2b303b;color:#c0c5ce;" class="language-rs "><code class="language-rs" data-lang="rs"><span style="color:#65737e;">// Assume that you have an entity named entity_with_inventory
+</span><span style="color:#b48ead;">let</span><span> entities = world.</span><span style="color:#96b5b4;">entities</span><span>();
+</span><span style="color:#b48ead;">let </span><span style="color:#96b5b4;">stored_in_container</span><span>();
+</span><span>
+</span><span style="color:#b48ead;">let</span><span> entities : Vec&lt;Entity&gt; = (&amp;entities, &amp;stored_in_containers)
+</span><span>    .</span><span style="color:#96b5b4;">join</span><span>()
+</span><span>    .</span><span style="color:#96b5b4;">filter</span><span>(|(</span><span style="color:#bf616a;">_entity</span><span>, </span><span style="color:#bf616a;">stored</span><span>)|{ entity_with_inventory == stored_in_container.stored_in})
+</span><span>    .</span><span style="color:#96b5b4;">map</span><span>(|</span><span style="color:#bf616a;">entity</span><span>, </span><span style="color:#bf616a;">_stored</span><span>| entity)
+</span><span>    .</span><span style="color:#96b5b4;">collect</span><span>();
+</span></code></pre>
+
+
+        
+    
+
+        
+        
+    </article></div>
+    <div class="pagination">
+        <div class="pagination__buttons">
+            </div>
+    </div>
+<footer class="footer">
+                    <div class="footer__inner"><div class="copyright">
+            <span>© 2021 <a href="https://github.com/ejmg/zerm">zerm</a> :: Powered by <a href="https://www.getzola.org/">Zola</a></span>
+            <span>:: Theme made by <a href="https://github.com/ejmg">ejmg</a></span>
+        </div>
+    <script type="text/javascript" src="https://jacobsky.github.io/assets/js/main.js"></script>
+</div>
+                    
+
+                </footer></div>
+    </body>
+</html>

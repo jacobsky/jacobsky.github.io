@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://jacobsky.github.io/sitemap.xml
