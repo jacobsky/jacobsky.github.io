@@ -32,8 +32,11 @@ show_categories = false
 # Menu items to display. You define a url and the name of the menu item.
 # NOTE: `$BASE_URL/` must be included in the url name.
 main_menu = [
-    
-              {url="/blog/", name="blog"},
-              {url="/projects/", name="projects"},
-            #   {url="https://google.com", name="Google", external=true},
+    {url="/articles/", name="Articles"},
+    {url="/ramblings/", name="Ramblings"},
+    {url="/projects/", name="Projects"},
 ]
+
+
+# center theme with default width.
+center = true
