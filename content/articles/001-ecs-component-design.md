@@ -1,5 +1,5 @@
 +++
-title = "How do design your ECS components."
+title = "How to design your ECS components."
 date = 2021-11-05
 [extra]
 author = "Jacobsky"
